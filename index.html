@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>作戦アーカイブ — Alliance Archive</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=Noto+Sans+JP:wght@400;500;700;900&family=Rajdhani:wght@500;600;700&display=swap');
+
+  :root{
+    --bg-void:#0d0b08;
+    --bg-panel:#17130d;
+    --line-gold:#c9a227;
+    --line-gold-bright:#f2d472;
+    --ink:#e9e2d0;
+    --ink-dim:#a89a7a;
+    --ok:#3f8c5f;
+    --off:#3a352c;
+  }
+
+  *{box-sizing:border-box;}
+  html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
+  html,body{margin:0;padding:0;background:var(--bg-void);color:var(--ink);
+    font-family:'Rajdhani',sans-serif;
+    overflow-x:hidden;
+    width:100%;
+  }
+  body{
+    background:
+      radial-gradient(ellipse at top, rgba(201,162,39,0.08), transparent 60%),
+      radial-gradient(ellipse at bottom, rgba(92,23,23,0.18), transparent 65%),
+      var(--bg-void);
+    min-height:100vh;
+    min-height:100dvh;
+    padding-bottom:calc(50px + env(safe-area-inset-bottom));
+    padding-left:env(safe-area-inset-left);
+    padding-right:env(safe-area-inset-right);
+    display:flex;
+    justify-content:center;
+  }
+  .page-frame{ width:100%; max-width:480px; }
+
+  .hero{
+    position:relative;
+    padding:calc(34px + env(safe-area-inset-top)) 20px 22px;
+    text-align:center;
+    border-bottom:1px solid rgba(201,162,39,0.35);
+  }
+  .crest{ display:block; margin:0 auto 10px; filter:drop-shadow(0 0 8px rgba(242,212,114,0.45)); }
+  .hero-title{
+    font-family:'Cinzel',serif;
+    font-weight:900;
+    font-size:clamp(24px,7vw,32px);
+    letter-spacing:2px;
+    margin:0 0 4px;
+    background:linear-gradient(180deg,var(--line-gold-bright),var(--line-gold));
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+    text-shadow:0 2px 10px rgba(0,0,0,0.5);
+  }
+  .hero-sub{
+    font-family:'Cinzel',serif;
+    font-size:11px;
+    letter-spacing:4px;
+    color:var(--ink-dim);
+    margin:0;
+    text-transform:uppercase;
+  }
+
+  .cal-wrap{ margin:18px 16px 0; }
+  .cal-nav{
+    display:flex; align-items:center; justify-content:space-between;
+    margin-bottom:12px;
+  }
+  .nav-btn{
+    background:var(--bg-panel);
+    border:1px solid rgba(201,162,39,0.4);
+    color:var(--line-gold-bright);
+    width:38px; height:38px;
+    border-radius:8px;
+    font-size:18px;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .nav-btn:active{ background:rgba(201,162,39,0.15); }
+  .cal-label{
+    font-family:'Cinzel',serif;
+    font-size:17px;
+    letter-spacing:1px;
+    color:var(--ink);
+  }
+
+  .weekdays, .days{
+    display:grid;
+    grid-template-columns:repeat(7,1fr);
+    gap:6px;
+  }
+  .weekdays{ margin-bottom:6px; }
+  .weekdays span{
+    text-align:center;
+    font-size:12px;
+    color:var(--ink-dim);
+    font-weight:600;
+  }
+
+  .day-btn{
+    position:relative;
+    aspect-ratio:1/1;
+    border-radius:8px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-family:'Rajdhani',sans-serif;
+    font-weight:700;
+    font-size:15px;
+    background:var(--bg-panel);
+    border:1px solid rgba(255,255,255,0.06);
+    color:var(--off);
+    text-decoration:none;
+  }
+  .day-btn.pad{ visibility:hidden; }
+  .day-btn.checking{ color:var(--ink-dim); }
+  .day-btn.checking::after{
+    content:"";
+    width:5px; height:5px; border-radius:50%;
+    background:var(--ink-dim);
+    position:absolute; bottom:6px;
+    animation:pulse-dot 1.1s ease-in-out infinite;
+  }
+  @keyframes pulse-dot{ 0%,100%{opacity:0.25;} 50%{opacity:0.9;} }
+
+  .day-btn.enabled{
+    color:#1a1408;
+    background:linear-gradient(160deg,var(--line-gold-bright),var(--line-gold));
+    border:1px solid var(--line-gold-bright);
+    box-shadow:0 0 10px rgba(242,212,114,0.45), inset 0 0 0 1px rgba(255,255,255,0.25);
+  }
+  .day-btn.enabled:active{ transform:scale(0.94); }
+
+  .day-btn.today:not(.enabled){
+    border:1px solid var(--line-gold);
+    color:var(--ink-dim);
+  }
+  .day-btn.today::before{
+    content:"";
+    position:absolute; top:3px; right:3px;
+    width:5px; height:5px; border-radius:50%;
+    background:var(--line-gold-bright);
+  }
+
+  .legend{
+    display:flex;
+    justify-content:center;
+    gap:18px;
+    margin:18px 16px 0;
+    font-size:12.5px;
+    color:var(--ink-dim);
+  }
+  .legend span{ display:inline-flex; align-items:center; gap:6px; }
+  .dot{ width:10px; height:10px; border-radius:3px; display:inline-block; }
+  .dot.on{ background:linear-gradient(160deg,var(--line-gold-bright),var(--line-gold)); }
+  .dot.off{ background:var(--off); }
+
+  footer{
+    text-align:center;
+    margin-top:26px;
+    font-family:'Cinzel',serif;
+    font-size:10.5px;
+    letter-spacing:2px;
+    color:var(--ink-dim);
+    opacity:0.7;
+  }
+</style>
+</head>
+<body>
+<div class="page-frame">
+
+<div class="hero">
+  <svg class="crest" width="36" height="36" viewBox="0 0 40 40" fill="none">
+    <path d="M20 2 L26 8 L26 20 Q26 30 20 36 Q14 30 14 20 L14 8 Z" stroke="#c9a227" stroke-width="1.4" fill="rgba(201,162,39,0.08)"/>
+    <path d="M20 6 L20 32" stroke="#f2d472" stroke-width="1.2"/>
+    <path d="M9 15 L14 17 M31 15 L26 17" stroke="#c9a227" stroke-width="1.4" stroke-linecap="round"/>
+    <circle cx="20" cy="16" r="2.4" fill="#f2d472"/>
+  </svg>
+  <p class="hero-title">作戦アーカイブ</p>
+  <p class="hero-sub">ALLIANCE ARCHIVE</p>
+</div>
+
+<div class="cal-wrap">
+  <div class="cal-nav">
+    <button class="nav-btn" id="prevBtn" aria-label="前の月">‹</button>
+    <span class="cal-label" id="calLabel"></span>
+    <button class="nav-btn" id="nextBtn" aria-label="次の月">›</button>
+  </div>
+  <div class="weekdays">
+    <span>日</span><span>月</span><span>火</span><span>水</span><span>木</span><span>金</span><span>土</span>
+  </div>
+  <div class="days" id="daysGrid"></div>
+</div>
+
+<div class="legend">
+  <span><span class="dot on"></span>作戦あり</span>
+  <span><span class="dot off"></span>未登録</span>
+</div>
+
+<footer>ALLIANCE WAR ROOM</footer>
+
+</div>
+
+<script>
+  const EXTENSIONS = ['jpg', 'jpeg', 'png', 'html'];
+  const today = new Date();
+  let viewYear = today.getFullYear();
+  let viewMonth = today.getMonth(); // 0-indexed
+
+  const calLabel = document.getElementById('calLabel');
+  const daysGrid = document.getElementById('daysGrid');
+  const prevBtn = document.getElementById('prevBtn');
+  const nextBtn = document.getElementById('nextBtn');
+
+  function pad(n){ return String(n).padStart(2, '0'); }
+
+  async function fileExists(url){
+    try{
+      const res = await fetch(url, { method: 'HEAD', cache: 'no-store' });
+      return res.ok;
+    }catch(e){
+      return false;
+    }
+  }
+
+  async function findFile(mm, dd){
+    for (const ext of EXTENSIONS){
+      const url = mm + dd + '.' + ext;
+      if (await fileExists(url)) return url;
+    }
+    return null;
+  }
+
+  function renderCalendar(){
+    calLabel.textContent = viewYear + '年 ' + (viewMonth + 1) + '月';
+    daysGrid.innerHTML = '';
+
+    const firstDow = new Date(viewYear, viewMonth, 1).getDay();
+    const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+
+    for (let i = 0; i < firstDow; i++){
+      const pad_ = document.createElement('div');
+      pad_.className = 'day-btn pad';
+      daysGrid.appendChild(pad_);
+    }
+
+    const isCurrentMonth = (viewYear === today.getFullYear() && viewMonth === today.getMonth());
+
+    for (let day = 1; day <= daysInMonth; day++){
+      const el = document.createElement('a');
+      el.className = 'day-btn checking';
+      el.textContent = day;
+      el.href = 'javascript:void(0)';
+      if (isCurrentMonth && day === today.getDate()){
+        el.classList.add('today');
+      }
+      daysGrid.appendChild(el);
+
+      const mm = pad(viewMonth + 1);
+      const dd = pad(day);
+      findFile(mm, dd).then(url => {
+        el.classList.remove('checking');
+        if (url){
+          el.classList.add('enabled');
+          el.href = url;
+          el.target = '_blank';
+          el.rel = 'noopener';
+        }
+      });
+    }
+  }
+
+  prevBtn.addEventListener('click', () => {
+    viewMonth--;
+    if (viewMonth < 0){ viewMonth = 11; viewYear--; }
+    renderCalendar();
+  });
+  nextBtn.addEventListener('click', () => {
+    viewMonth++;
+    if (viewMonth > 11){ viewMonth = 0; viewYear++; }
+    renderCalendar();
+  });
+
+  renderCalendar();
+</script>
+
+</body>
+</html>
