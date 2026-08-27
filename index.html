@@ -168,6 +168,74 @@
     color:var(--ink-dim);
     opacity:0.7;
   }
+
+  .modal-overlay{
+    position:fixed;
+    inset:0;
+    background:rgba(5,4,2,0.88);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    z-index:100;
+    padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
+  }
+  .modal-overlay.open{ display:flex; }
+  .modal-box{
+    position:relative;
+    width:94%;
+    max-width:480px;
+    max-height:92vh;
+    max-height:92dvh;
+    background:var(--bg-panel);
+    border:1px solid rgba(201,162,39,0.4);
+    border-radius:12px;
+    box-shadow:0 0 30px rgba(0,0,0,0.6);
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+  }
+  .modal-close{
+    position:absolute;
+    top:8px; right:8px;
+    width:32px; height:32px;
+    border-radius:50%;
+    background:rgba(13,11,8,0.85);
+    border:1px solid rgba(201,162,39,0.5);
+    color:var(--line-gold-bright);
+    font-size:18px;
+    line-height:1;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    z-index:2;
+  }
+  .modal-body{
+    flex:1;
+    overflow:auto;
+    display:flex;
+    align-items:flex-start;
+    justify-content:center;
+    -webkit-overflow-scrolling:touch;
+  }
+  .modal-body img{
+    width:100%;
+    height:auto;
+    display:block;
+  }
+  .modal-body iframe{
+    width:100%;
+    height:80vh;
+    height:80dvh;
+    border:0;
+    display:block;
+  }
+  .modal-loading{
+    padding:60px 20px;
+    text-align:center;
+    color:var(--ink-dim);
+    font-size:13px;
+    letter-spacing:1px;
+  }
 </style>
 </head>
 <body>
@@ -205,6 +273,13 @@
 
 </div>
 
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal-box">
+    <button class="modal-close" id="modalClose" aria-label="閉じる">×</button>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
 <script>
   const EXTENSIONS = ['jpg', 'jpeg', 'png', 'html'];
   const today = new Date();
@@ -215,6 +290,44 @@
   const daysGrid = document.getElementById('daysGrid');
   const prevBtn = document.getElementById('prevBtn');
   const nextBtn = document.getElementById('nextBtn');
+
+  const modalOverlay = document.getElementById('modalOverlay');
+  const modalBody = document.getElementById('modalBody');
+  const modalClose = document.getElementById('modalClose');
+
+  function openModal(url){
+    const isHtml = /\.html?$/i.test(url);
+    modalBody.innerHTML = '<p class="modal-loading">読み込み中…</p>';
+    modalOverlay.classList.add('open');
+    document.body.style.overflow = 'hidden';
+
+    if (isHtml){
+      const iframe = document.createElement('iframe');
+      iframe.src = url;
+      modalBody.innerHTML = '';
+      modalBody.appendChild(iframe);
+    } else {
+      const img = document.createElement('img');
+      img.src = url;
+      img.alt = url;
+      img.onload = () => { modalBody.innerHTML = ''; modalBody.appendChild(img); };
+      img.onerror = () => { modalBody.innerHTML = '<p class="modal-loading">読み込みに失敗しました</p>'; };
+    }
+  }
+
+  function closeModal(){
+    modalOverlay.classList.remove('open');
+    modalBody.innerHTML = '';
+    document.body.style.overflow = '';
+  }
+
+  modalClose.addEventListener('click', closeModal);
+  modalOverlay.addEventListener('click', (e) => {
+    if (e.target === modalOverlay) closeModal();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeModal();
+  });
 
   function pad(n){ return String(n).padStart(2, '0'); }
 
@@ -258,6 +371,10 @@
       if (isCurrentMonth && day === today.getDate()){
         el.classList.add('today');
       }
+      el.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (el.dataset.url) openModal(el.dataset.url);
+      });
       daysGrid.appendChild(el);
 
       const mm = pad(viewMonth + 1);
@@ -266,9 +383,7 @@
         el.classList.remove('checking');
         if (url){
           el.classList.add('enabled');
-          el.href = url;
-          el.target = '_blank';
-          el.rel = 'noopener';
+          el.dataset.url = url;
         }
       });
     }
