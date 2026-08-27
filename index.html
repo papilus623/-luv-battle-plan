@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>8/27 討伐計画 — Battle Plan</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=Noto+Sans+JP:wght@400;500;700;900&family=Rajdhani:wght@500;600;700&display=swap');
@@ -20,24 +20,44 @@
     --alert:#e2b33c;
     --hp-orange:#c0532f;
     --hp-green:#3f8c5f;
+    --brass-dark:#5a4514;
+    --ember:#ff8a4c;
+    --crest-blue:#4a7fd8;
   }
 
   *{box-sizing:border-box;}
+  html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
   html,body{margin:0;padding:0;background:var(--bg-void);color:var(--ink);
-    font-family:'Rajdhani',sans-serif;}
+    font-family:'Rajdhani',sans-serif;
+    overflow-x:hidden;
+    width:100%;
+  }
 
   body{
     background:
       radial-gradient(ellipse at top, rgba(201,162,39,0.08), transparent 60%),
+      radial-gradient(ellipse at bottom, rgba(92,23,23,0.18), transparent 65%),
       var(--bg-void);
     min-height:100vh;
-    padding-bottom:60px;
+    min-height:100dvh;
+    padding-bottom:calc(60px + env(safe-area-inset-bottom));
+    padding-left:env(safe-area-inset-left);
+    padding-right:env(safe-area-inset-right);
+    display:flex;
+    justify-content:center;
+  }
+
+  /* Keeps the layout a fixed-width phone card, centered, so it stays
+     the same optimized portrait design on wider phones/tablets too */
+  .page-frame{
+    width:100%;
+    max-width:480px;
   }
 
   /* ---------- HERO ---------- */
   .hero{
     position:relative;
-    padding:38px 20px 30px;
+    padding:calc(38px + env(safe-area-inset-top)) 20px 30px;
     text-align:center;
     background:
       linear-gradient(180deg, rgba(92,23,23,0.35), transparent 70%),
@@ -55,6 +75,35 @@
   }
   .hero::before{ left:-30px; transform:skewX(-8deg);}
   .hero::after{ right:-30px; transform:skewX(8deg);}
+
+  .ember{
+    position:absolute;
+    bottom:-10px;
+    width:3px; height:3px;
+    border-radius:50%;
+    background:var(--ember);
+    box-shadow:0 0 6px 1px rgba(255,138,76,0.9);
+    opacity:0;
+    animation:rise 6s ease-in infinite;
+  }
+  .ember:nth-child(1){ left:14%; animation-delay:0s; }
+  .ember:nth-child(2){ left:34%; animation-delay:1.6s; width:2px; height:2px; }
+  .ember:nth-child(3){ left:58%; animation-delay:3.1s; }
+  .ember:nth-child(4){ left:78%; animation-delay:0.8s; width:2px; height:2px; }
+  .ember:nth-child(5){ left:90%; animation-delay:4.2s; }
+  @keyframes rise{
+    0%{ opacity:0; transform:translateY(0) translateX(0); }
+    12%{ opacity:0.85; }
+    80%{ opacity:0.4; }
+    100%{ opacity:0; transform:translateY(-190px) translateX(8px); }
+  }
+  @media (prefers-reduced-motion: reduce){ .ember{ animation:none; opacity:0; } }
+
+  .crest{
+    display:block;
+    margin:0 auto 10px;
+    filter:drop-shadow(0 0 8px rgba(242,212,114,0.45));
+  }
 
   .hero-date{
     font-family:'Cinzel',serif;
@@ -74,6 +123,28 @@
     margin:2px 0 18px;
   }
   .hero-sub .slash{ color:var(--line-gold); margin:0 8px; }
+
+  .hero-divider{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:10px;
+    max-width:220px;
+    margin:0 auto 18px;
+  }
+  .hero-divider .bar{
+    flex:1;
+    height:1px;
+    background:linear-gradient(90deg, transparent, var(--line-gold));
+  }
+  .hero-divider .bar.right{ background:linear-gradient(90deg, var(--line-gold), transparent); }
+  .hero-divider .diamond{
+    width:6px; height:6px;
+    background:var(--line-gold-bright);
+    transform:rotate(45deg);
+    box-shadow:0 0 6px rgba(242,212,114,0.7);
+    flex:0 0 auto;
+  }
 
   .time-badge{
     display:inline-flex;
@@ -136,6 +207,7 @@
 
   /* ---------- CONTENT PANEL ---------- */
   .panel{
+    position:relative;
     margin:16px 16px 0;
     background:var(--bg-panel);
     border:1px solid rgba(201,162,39,0.3);
@@ -144,20 +216,44 @@
     display:none;
   }
   .panel.active{ display:block; animation:fade .25s ease; }
+  .panel::before, .panel::after,
+  .map-frame::before, .map-frame::after{
+    content:"";
+    position:absolute;
+    width:14px; height:14px;
+    border:2px solid var(--line-gold-bright);
+    opacity:0.85;
+    pointer-events:none;
+  }
+  .panel::before{ top:-1px; left:-1px; border-right:none; border-bottom:none; border-radius:6px 0 0 0; }
+  .panel::after{ bottom:-1px; right:-1px; border-left:none; border-top:none; border-radius:0 0 6px 0; }
+  .map-frame::before{ top:-1px; left:-1px; border-right:none; border-bottom:none; border-radius:8px 0 0 0; }
+  .map-frame::after{ bottom:-1px; right:-1px; border-left:none; border-top:none; border-radius:0 0 8px 0; }
   @keyframes fade{ from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:translateY(0);} }
 
+  .priority-list{
+    position:relative;
+  }
   .priority-row{
+    position:relative;
     display:flex;
     align-items:center;
-    gap:14px;
-    padding:10px 0;
+    gap:16px;
+    padding:11px 0;
+  }
+  .priority-row:not(:last-child)::after{
+    content:"";
+    position:absolute;
+    left:19px; top:44px;
+    width:2px; height:calc(100% - 30px);
+    background:linear-gradient(180deg, rgba(159,192,255,0.55), rgba(159,192,255,0.05));
   }
   .priority-num{
+    position:relative;
     flex:0 0 auto;
-    width:34px; height:34px;
-    border-radius:50%;
-    background:radial-gradient(circle at 30% 30%, #4a7fd8, #1c3f8f);
-    border:2px solid #9fc0ff;
+    width:38px; height:38px;
+    clip-path:polygon(50% 0%, 95% 25%, 95% 75%, 50% 100%, 5% 75%, 5% 25%);
+    background:radial-gradient(circle at 32% 28%, #6d9ded, #1c3f8f 70%);
     color:#fff;
     font-family:'Cinzel',serif;
     font-weight:900;
@@ -165,12 +261,14 @@
     display:flex;
     align-items:center;
     justify-content:center;
-    box-shadow:0 0 10px rgba(74,127,216,0.6);
+    box-shadow:0 0 12px rgba(74,127,216,0.7), inset 0 0 0 2px rgba(207,224,255,0.5);
+    text-shadow:0 1px 2px rgba(0,0,0,0.5);
   }
   .priority-text{
     font-size:clamp(17px,4.4vw,20px);
     font-weight:700;
     color:#fff;
+    letter-spacing:0.3px;
   }
   .divider{
     height:1px;
@@ -190,12 +288,21 @@
     margin:28px 16px 0;
   }
   .map-title{
+    display:flex;
+    align-items:center;
+    gap:8px;
     font-family:'Cinzel',serif;
     font-size:13px;
     letter-spacing:3px;
     text-transform:uppercase;
     color:var(--ink-dim);
     margin:0 0 10px 4px;
+  }
+  .map-title::before{
+    content:"";
+    width:16px; height:1px;
+    background:var(--line-gold);
+    display:inline-block;
   }
   .map-frame{
     position:relative;
@@ -250,7 +357,16 @@
   .tile-house{ background:linear-gradient(160deg, var(--hp-orange), #7a2f1c); }
   .tile-house .icon{ color:rgba(255,255,255,0.5); font-size:22px; }
   .tile-empty-orange{ background:linear-gradient(160deg, var(--hp-orange), #7a2f1c); }
-  .tile-target{ background:linear-gradient(160deg, #e8c15a, #a3781f); box-shadow:0 0 0 2px #fff3c4, 0 0 12px rgba(242,212,114,0.6); }
+  .tile-target{
+    background:linear-gradient(160deg, #e8c15a, #a3781f);
+    box-shadow:0 0 0 2px #fff3c4, 0 0 12px rgba(242,212,114,0.6);
+    animation:target-pulse 2.4s ease-in-out infinite;
+  }
+  @keyframes target-pulse{
+    0%,100%{ box-shadow:0 0 0 2px #fff3c4, 0 0 12px rgba(242,212,114,0.6); }
+    50%{ box-shadow:0 0 0 2px #fff3c4, 0 0 22px rgba(242,212,114,0.95); }
+  }
+  @media (prefers-reduced-motion: reduce){ .tile-target{ animation:none; } }
   .tile-land-a{ background:linear-gradient(160deg, var(--hp-green), #245638); }
   .tile-land-b{ background:linear-gradient(160deg, #dba53c, #8f6c1f); }
   .tile-danger{ background:linear-gradient(160deg, #b0492c, #4a1c12); }
@@ -345,8 +461,16 @@
     font-size:12.5px;
     color:var(--ink-dim);
   }
-  .legend span{ display:inline-flex; align-items:center; gap:6px; }
-  .swatch{ width:12px; height:12px; border-radius:3px; display:inline-block; }
+  .legend span{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    background:rgba(255,255,255,0.03);
+    border:1px solid rgba(201,162,39,0.2);
+    border-radius:20px;
+    padding:4px 10px 4px 6px;
+  }
+  .swatch{ width:12px; height:12px; border-radius:3px; display:inline-block; box-shadow:0 0 4px rgba(0,0,0,0.5); }
 
   footer{
     text-align:center;
@@ -358,13 +482,22 @@
 </style>
 </head>
 <body>
+<div class="page-frame">
 
 <div class="hero">
+  <span class="ember"></span><span class="ember"></span><span class="ember"></span><span class="ember"></span><span class="ember"></span>
+  <svg class="crest" width="40" height="40" viewBox="0 0 40 40" fill="none">
+    <path d="M20 2 L26 8 L26 20 Q26 30 20 36 Q14 30 14 20 L14 8 Z" stroke="#c9a227" stroke-width="1.4" fill="rgba(201,162,39,0.08)"/>
+    <path d="M20 6 L20 32" stroke="#f2d472" stroke-width="1.2"/>
+    <path d="M9 15 L14 17 M31 15 L26 17" stroke="#c9a227" stroke-width="1.4" stroke-linecap="round"/>
+    <circle cx="20" cy="16" r="2.4" fill="#f2d472"/>
+  </svg>
   <p class="hero-date">8/27 討伐計画</p>
   <p class="hero-sub">BATTLE PLAN</p>
+  <div class="hero-divider"><span class="bar"></span><span class="diamond"></span><span class="bar right"></span></div>
   <div class="time-badge">
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f2d472" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
-    <span>23:00 <b>日本時間</b> / 12:00 <b>SERVER TIME</b></span>
+    <span id="timeBadgeText">23:00 <b>日本時間</b> / 12:00 <b>SERVER TIME</b></span>
   </div>
   <span class="status-tag">Alliance Directive · Scheduled 2026-08-27</span>
 </div>
@@ -381,8 +514,10 @@
 
 <!-- JA -->
 <div class="panel active" data-lang="ja">
+  <div class="priority-list">
   <div class="priority-row"><div class="priority-num">1</div><div class="priority-text">アウトポストを死守</div></div>
   <div class="priority-row"><div class="priority-num">2</div><div class="priority-text">砦を奪取</div></div>
+  </div>
   <div class="divider"></div>
   <div class="note-line">① ② 以外は展開を見てから決定</div>
   <div class="note-line highlight">同盟チャットに注目！</div>
@@ -392,8 +527,10 @@
 
 <!-- EN -->
 <div class="panel" data-lang="en">
+  <div class="priority-list">
   <div class="priority-row"><div class="priority-num">1</div><div class="priority-text">Defend the Outpost</div></div>
   <div class="priority-row"><div class="priority-num">2</div><div class="priority-text">Capture the Fortress</div></div>
+  </div>
   <div class="divider"></div>
   <div class="note-line">Other actions will be decided as the battle unfolds.</div>
   <div class="note-line highlight">Watch the alliance chat!</div>
@@ -402,8 +539,10 @@
 
 <!-- KO -->
 <div class="panel" data-lang="ko">
+  <div class="priority-list">
   <div class="priority-row"><div class="priority-num">1</div><div class="priority-text">전초기지 사수</div></div>
   <div class="priority-row"><div class="priority-num">2</div><div class="priority-text">요새 점령</div></div>
+  </div>
   <div class="divider"></div>
   <div class="note-line">① ② 외의 작전은 전황을 보고 결정</div>
   <div class="note-line highlight">동맹 채팅에 주목!</div>
@@ -413,8 +552,10 @@
 
 <!-- VI -->
 <div class="panel" data-lang="vi">
+  <div class="priority-list">
   <div class="priority-row"><div class="priority-num">1</div><div class="priority-text">Giữ Tiền đồn</div></div>
   <div class="priority-row"><div class="priority-num">2</div><div class="priority-text">Chiếm Pháo đài</div></div>
+  </div>
   <div class="divider"></div>
   <div class="note-line">Các hành động khác sẽ tùy diễn biến trận đấu.</div>
   <div class="note-line highlight">Hãy chú ý chat Liên minh!</div>
@@ -423,8 +564,10 @@
 
 <!-- TR -->
 <div class="panel" data-lang="tr">
+  <div class="priority-list">
   <div class="priority-row"><div class="priority-num">1</div><div class="priority-text">Karakolu savun</div></div>
   <div class="priority-row"><div class="priority-num">2</div><div class="priority-text">Kaleyi ele geçir</div></div>
+  </div>
   <div class="divider"></div>
   <div class="note-line">Diğer hamleler savaşın gidişatına göre belirlenecek.</div>
   <div class="note-line highlight">İttifak sohbetini takip edin!</div>
@@ -438,15 +581,42 @@
   </div>
 </div>
 
-<footer>ALLIANCE WAR ROOM — 8/27 討伐計画</footer>
+<footer><span style="color:var(--line-gold)">◆</span>&nbsp; ALLIANCE WAR ROOM — 8/27 討伐計画 &nbsp;<span style="color:var(--line-gold)">◆</span></footer>
+
+</div>
 
 <script>
   const select = document.getElementById('langSelect');
   const panels = document.querySelectorAll('.panel');
+  const timeBadgeText = document.getElementById('timeBadgeText');
+
+  // 23:00 is fixed as Japan time (JST, UTC+9). Each language shows that
+  // alongside the equivalent local time for its own region — except
+  // English, which keeps the neutral "SERVER TIME" reference.
+  const timeData = {
+    ja: { primary:['23:00','日本時間'], secondary:null },
+    en: { primary:['23:00','JST'],       secondary:['12:00','SERVER TIME'] },
+    ko: { primary:['23:00','일본 시간'],  secondary:['23:00','한국 시간'] },   // KST = UTC+9
+    vi: { primary:['23:00','giờ Nhật Bản'], secondary:['21:00','giờ Việt Nam'] }, // ICT = UTC+7
+    tr: { primary:['23:00','Japonya saati'], secondary:['17:00','Türkiye saati'] } // TRT = UTC+3
+  };
+
+  function updateTimeBadge(lang){
+    const d = timeData[lang] || timeData.ja;
+    let html = d.primary[0] + ' <b>' + d.primary[1] + '</b>';
+    if (d.secondary) {
+      html += ' / ' + d.secondary[0] + ' <b>' + d.secondary[1] + '</b>';
+    }
+    timeBadgeText.innerHTML = html;
+  }
+
   select.addEventListener('change', () => {
     panels.forEach(p => p.classList.remove('active'));
     document.querySelector('.panel[data-lang="' + select.value + '"]').classList.add('active');
+    updateTimeBadge(select.value);
   });
+
+  updateTimeBadge(select.value);
 </script>
 
 </body>
